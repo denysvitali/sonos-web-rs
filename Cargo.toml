@@ -1,0 +1,10 @@
+[package]
+name = "sonos-web"
+version = "0.1.0"
+authors = ["Denys Vitali <denys.vitali@coelis.ch>"]
+
+[dependencies]
+rocket = "0.3.0"
+rocket_codegen = "0.3.0"
+ssdp = "0.6.0"
+log = "0.3"
