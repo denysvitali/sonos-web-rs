@@ -4,6 +4,7 @@
 
 extern crate sonos;
 extern crate rocket;
+extern crate serde_json;
 
 use rocket::State;
 use rocket_contrib::Json;
@@ -62,6 +63,88 @@ fn pause(devices: State<Devices>, id: usize) -> Json {
     }))
 }
 
+#[get("/api/<id>/next")]
+fn next(devices: State<Devices>, id: usize) -> Json {
+    speaker_check!(&devices, id);
+
+    let result = devices.speakers[id as usize].next();
+    Json(json!({
+        "success": result.is_ok()
+    }))
+}
+
+#[get("/api/<id>/prev")]
+fn prev(devices: State<Devices>, id: usize) -> Json {
+    speaker_check!(&devices, id);
+
+    let result = devices.speakers[id as usize].previous();
+    Json(json!({
+        "success": result.is_ok()
+    }))
+}
+
+#[get("/api/<id>/mute")]
+fn mute(devices: State<Devices>, id: usize) -> Json {
+    speaker_check!(&devices, id);
+
+    let result = devices.speakers[id as usize].mute();
+    Json(json!({
+        "success": result.is_ok()
+    }))
+}
+
+#[get("/api/<id>/unmute")]
+fn unmute(devices: State<Devices>, id: usize) -> Json {
+    speaker_check!(&devices, id);
+
+    let result = devices.speakers[id as usize].unmute();
+    Json(json!({
+        "success": result.is_ok()
+    }))
+}
+
+
+#[get("/api/<id>/track_info")]
+fn track_info(devices: State<Devices>, id: usize) -> Json {
+    speaker_check!(&devices, id);
+
+    let result = devices.speakers[id as usize].track().unwrap();
+    Json(json!({
+        "success": true,
+        "track": {
+            "title": result.title,
+            "artist": result.artist,
+            "album": result.album,
+            "albumArt": result.albumArt,
+            "uri": result.uri,
+            "duration": result.duration,
+            "running_time": result.running_time
+        }
+    }))
+}
+
+#[get("/api/<id>/transport_state")]
+fn transport_state(devices: State<Devices>, id: usize) -> Json {
+    speaker_check!(&devices, id);
+
+    let result = devices.speakers[id as usize].transport_state();
+
+    match result {
+        Err(_e)=> {
+            Json(json!({
+                "success": false,
+                "transport_state": serde_json::Value::Null
+            }))
+        },
+        Ok(transport_state) =>{
+            Json(json!({
+                "success": true,
+                "transport_state": format!("{:?}", transport_state)
+            }))
+        }
+    }
+}
+
 fn main() {
     println!("🎵  Starting Sonos-Web");
     println!("🔍  Searching for your SONOS system...");
@@ -69,7 +152,7 @@ fn main() {
     let devices = sonos::discover().unwrap();
     
     rocket::ignite()
-        .mount("/", routes![index, play, pause, set_volume])
+        .mount("/", routes![index, play, pause, next, prev, mute, unmute, track_info, set_volume])
         .manage(Devices { speakers: devices})
         .launch();
 }
