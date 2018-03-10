@@ -5,9 +5,15 @@
 extern crate sonos;
 extern crate rocket;
 extern crate serde_json;
+extern crate ws;
 
 use rocket::State;
 use rocket_contrib::Json;
+use rocket::response::NamedFile;
+use std::path::Path;
+use std::path::PathBuf;
+use std::io;
+use std::thread;
 
 struct Devices {
     speakers: Vec<sonos::Speaker>
@@ -25,8 +31,8 @@ macro_rules! speaker_check {
 }
 
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world! 🙂"
+fn index() -> io::Result<NamedFile> {
+    NamedFile::open("static/index.html")
 }
 
 fn speaker_exists(devices: &State<Devices>, id: usize)->bool {
@@ -145,14 +151,29 @@ fn transport_state(devices: State<Devices>, id: usize) -> Json {
     }
 }
 
+#[get("/static/<file..>")]
+fn files(file: PathBuf) -> Option<rocket::response::NamedFile> {
+    rocket::response::NamedFile::open(Path::new("static/").join(file)).ok()
+}
+
 fn main() {
     println!("🎵  Starting Sonos-Web");
     println!("🔍  Searching for your SONOS system...");
 
     let devices = sonos::discover().unwrap();
     
+    thread::spawn(move || {
+        ws::listen("127.0.0.1:3012", |out| {
+            move |msg| {
+                println!("Received {}", msg);
+                out.send(msg)
+            }
+        }).unwrap();
+    });
+    
     rocket::ignite()
-        .mount("/", routes![index, play, pause, next, prev, mute, unmute, track_info, set_volume])
+        .mount("/", routes![ index, play, pause, next, prev, mute, unmute, track_info, set_volume, files])
         .manage(Devices { speakers: devices})
         .launch();
+
 }
