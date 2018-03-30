@@ -10,5 +10,7 @@ rocket_contrib = "0.3.6"
 ssdp = "0.6.0"
 log = "0.3"
 sonos = { path = "./sonos_lib" }
-serde_json = "1.0.9"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
 ws = "*"

@@ -1,0 +1,250 @@
+@import (reference) "include/colors.less";
+@import "include/dimensions.less";
+@import "/static/fonts/open-sans/regular/stylesheet.css";
+@import "/static/fonts/open-sans/light/stylesheet.css";
+@import "/static/fonts/open-sans/bold/stylesheet.css";
+@import "/static/fonts/font-awesome/css/fontawesome-all.min.css";
+
+body{
+    font-family: 'Open Sans Light';
+    background-color: @bgColor;
+    color: @bodyTextColor;
+    margin: 0.25em;
+    margin-left: @body_margin_left;
+    margin-right: 0.5em;
+    padding: 0;
+}
+
+header{
+    div#topbar{
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: @top_bar_height;
+        background-color: @mainColorTransparent;
+        color: @topBarTitleColor;
+
+        div.left {
+            position: relative;
+            float: left;
+            width: 50%;
+            height: 100%;
+
+            div.menutoggle{
+                cursor: pointer;
+                float: left;
+                height: @top_bar_height;
+                line-height: @top_bar_height;
+                margin-left: @top_bar_title_left;
+            }
+
+            div.title{
+                float: left;
+                font-family: 'Open Sans Bold';
+                font-size: 1.2em;
+                height: @top_bar_height;
+                margin-left: @top_bar_title_left;
+                line-height: @top_bar_height;
+            }
+
+            &:after{
+                clear: both;
+            }
+        }
+
+        &:after{
+            clear: both;
+        }
+    }
+}
+
+div#content{
+    margin-top: @top_bar_height + @top_bar_margin_bottom;
+    margin-left: @content_left;
+}
+
+div#playBar{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: @playbar_height;
+    color: @playbarColor;
+    background-color: @mainColorTransparent;
+
+    div.progressbar{
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: @progressbar_height;
+        background-color: @progressbarColor;
+        z-index: 20;
+
+        div.progress-active{
+            width: 50%;
+            height: @progressbar_height;
+            background-color: @progressbarActiveColor;
+        }
+    }
+
+    div.song_box{
+        display: block;
+        float: left;
+        position: relative;
+        height: @song_box_height;
+        padding-top: @progressbar_height;
+        width: 35vw;
+        img.album_cover{
+            float: left;
+            width: @song_box_height;
+            height: @song_box_height;
+        }
+
+        div.song_info{
+            float: left;
+            height: @song_box_height;
+            padding-left: @songbox_songinfo_left;
+            padding-top: @songbox_songinfo_padding_top;
+            overflow: hidden;
+            max-width: @songbox_songinfo_width;
+            width: @songbox_songinfo_width;
+
+            div.title{
+                font-size: 1.2em;
+                font-weight: 500;
+                margin-top: @playbar_songinfo_title_margintop;
+            }
+
+            div.artist{
+                color: @playbarSongArtistColor;
+                margin-top: @playbar_songinfo_artist_margintop;
+                font-size: 1em;
+                height: 1.5em;
+            }
+            
+            div.album{
+                color: @playbarSongAlbumColor;
+                margin-top: @playbar_songinfo_album_margintop;
+                font-size: 1em;
+            }
+        }
+
+        &:after{
+            clear: both;
+        }
+    }
+
+    div.player_controls{
+        float: left;
+        width: 30vw;
+        height: @song_box_height;
+        margin-top: @progressbar_height;
+
+        div.controls{
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: space-around;
+            height: @player_controls_size;
+            margin-top: @song_box_height/2 - @player_control_prev_size/2;
+            margin-left: auto;
+            margin-right: auto;
+
+            div.control{
+                cursor: pointer;
+                display: block;
+                color: @controlsColor;
+                width: @player_controls_size;
+                height: @player_controls_size;
+                margin-left: @controls_spacing;
+                font-size: @player_controls_size - 0.1 * @player_controls_size;
+                line-height: @player_controls_size;
+
+                &:first-child{
+                    margin-left: 0;
+                }
+            }
+        }
+    }
+
+    div.timing_info{
+        float: left;
+        width: 35vw;
+        height: @song_box_height;
+        margin-top: @progressbar_height;
+        text-align: right;
+
+        div.timing_volume{
+            height: @playbar_timing_height;
+            margin-top: @song_box_height/2 - @playbar_timing_height/2;
+
+            div.volume_control{
+                float: left;
+                width: @playbar_volume_total_width - @playbar_volume_margin_left;
+                margin-left: @playbar_volume_margin_left;
+                div.volume-icon{
+                    float: left;
+                    height: @playbar_volumebox_height;
+                    width: @playbar_volumebox_height;
+                }
+                div.volume-bar{
+                    position: relative;
+                    float: left;
+                    margin-left: 20px;
+                    margin-top: (@playbar_volumebox_height - @playbar_volumebar_height)/2;
+                    height: @playbar_volumebox_height;
+                    width: @playbar_volumebar_width;
+
+                    div.volume-bar-empty{
+                        position: absolute;
+                        top: (@playbar_volumebox_height - @playbar_volumebar_height)/2;
+                        width: 100%;
+                        margin-top: -(@playbar_volumebar_height)/2;
+                        height: @playbar_volumebar_height;
+                        background-color: @volumebarColor;
+                    }
+
+                    div.volume-bar-fill{
+                        position: absolute;
+                        top: (@playbar_volumebox_height - @playbar_volumebar_height)/2;
+                        height: @playbar_volumebar_height;
+                        margin-top: -(@playbar_volumebar_height)/2;
+                        width: 40%;
+                        background-color: @volumebarFillColor;
+                    }
+
+                    div.volume-bar-dot {
+                        background-color: @volumebarFillColor;
+                        height: @playbar_volumebar_dot_size;
+                        width: @playbar_volumebar_dot_size;
+                        position: absolute;
+                        left: 40%;
+                        top: (@playbar_volumebox_height - @playbar_volumebar_height)/2;
+                        margin-top: -(@playbar_volumebar_dot_size)/2;
+                        margin-left: -(@playbar_volumebar_dot_size)/2;
+                        border-radius: @playbar_volumebar_dot_size;
+                    }
+                }
+                div.volume-value{
+                    float: left;
+                    height: @playbar_volumebox_height;
+                    margin-left: 20px;
+                }
+
+                &:after{
+                    clear: both;
+                }
+            }
+
+            div.timing{
+                display: block;
+                float: left;
+                width: @playbar_timing_total_width - @playbar_timing_margin_right;
+                font-size: 1.1em;
+                margin-right: @playbar_timing_margin_right;
+            }
+        }
+    }
+}

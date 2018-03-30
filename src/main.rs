@@ -2,10 +2,16 @@
 #![plugin(rocket_codegen)]
 #[macro_use] extern crate rocket_contrib;
 
+#[macro_use]
+extern crate serde_derive;
+
+extern crate serde;
+extern crate serde_json;
+
 extern crate sonos;
 extern crate rocket;
-extern crate serde_json;
 extern crate ws;
+extern crate core;
 
 use rocket::State;
 use rocket_contrib::Json;
@@ -15,9 +21,14 @@ use std::path::PathBuf;
 use std::io;
 use std::thread;
 
-struct Devices {
-    speakers: Vec<sonos::Speaker>
-}
+mod models;
+mod results;
+
+use models::devices::Devices;
+use results::track_info::TrackInfoResult;
+use results::meta::Meta;
+use models::track::Track;
+use results::error::Error;
 
 macro_rules! speaker_check {
     ($a:expr, $b:expr) => {
@@ -32,7 +43,7 @@ macro_rules! speaker_check {
 
 #[get("/")]
 fn index() -> io::Result<NamedFile> {
-    NamedFile::open("static/index.html")
+    NamedFile::open("static/public/index.html")
 }
 
 fn speaker_exists(devices: &State<Devices>, id: usize)->bool {
@@ -111,22 +122,36 @@ fn unmute(devices: State<Devices>, id: usize) -> Json {
 
 
 #[get("/api/<id>/track_info")]
-fn track_info(devices: State<Devices>, id: usize) -> Json {
-    speaker_check!(&devices, id);
+fn track_info(devices: State<Devices>, id: usize) -> Json<TrackInfoResult> {
+    if !speaker_exists(&devices, id) {
+        return Json(TrackInfoResult{
+            track: None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Unable to find this device")
+                })
+            }
+        });
+    }
 
     let result = devices.speakers[id as usize].track().unwrap();
-    Json(json!({
-        "success": true,
-        "track": {
-            "title": result.title,
-            "artist": result.artist,
-            "album": result.album,
-            "albumArt": result.albumArt,
-            "uri": result.uri,
-            "duration": result.duration,
-            "running_time": result.running_time
-        }
-    }))
+    Json(TrackInfoResult{
+        meta: Meta {
+            success: true,
+            error: None
+        },
+        track: Some(Track {
+            title: result.title,
+            artist: result.artist,
+            album: result.album,
+            album_art: result.album_art,
+            uri: result.uri,
+            duration: result.duration,
+            running_time: result.running_time
+        })
+    })
 }
 
 #[get("/api/<id>/transport_state")]
@@ -153,7 +178,7 @@ fn transport_state(devices: State<Devices>, id: usize) -> Json {
 
 #[get("/static/<file..>")]
 fn files(file: PathBuf) -> Option<rocket::response::NamedFile> {
-    rocket::response::NamedFile::open(Path::new("static/").join(file)).ok()
+    rocket::response::NamedFile::open(Path::new("static/public/").join(file)).ok()
 }
 
 fn main() {
