@@ -13,11 +13,11 @@ html
 		div#content
 			h2 Sonos-Web RS
 		div#playBar
-			div.progressbar
+			div#playbar-progress.progressbar
 				div.progress-active
-			div.song_box
+			div#song_box.song_box
 				img.album_cover(src="/static/img/dummy-cover.jpg")
-				div.song_info
+				div#sb_song_info.song_info
 					div.title Some Title
 					div.artist Some Artist
 					div.album Ministry Of Sound - Ibiza 2017
@@ -39,4 +39,5 @@ html
 							div.volume-bar-fill
 							div.volume-bar-dot
 						div.volume-value 40
-					div.timing 01:24 / 02:48
+					div#running-time.timing 01:24 / 02:48
+		script(src="/static/js/main-min.js" type="text/javascript")

@@ -18,6 +18,7 @@ const less = require('gulp-less');
 const rename = require('gulp-rename');
 const jade = require('gulp-jade');
 const lessChanged = require('gulp-less-changed');
+const minify = require('gulp-minify');
 
 var customOpts = {
     entries: ['./src/js/main.js'],
@@ -53,11 +54,24 @@ gulp.task('libs', ['clean'], function () {
         .pipe(gulp.dest('./public/js/libs'));
 });
 
+
+/**
+ * This task will minify all the js files and put them in
+ * `/public/js`
+ */
+gulp.task('js', ['clean'], function () {
+    'use strict';
+    return gulp.src(['./src/js/*.js'])
+        .pipe(plumber())
+        .pipe(minify())
+        .pipe(gulp.dest('./public/js/'));
+});
+
 /**
  * This task will copy all files from media into 'public/fonts'.
  * If you want to process them, just add your code to this task.
  */
-gulp.task('media', ['libs'], function () {
+gulp.task('media', ['js', 'libs'], function () {
     'use strict';
     return gulp.src(['./src/img/**'])
         .pipe(plumber())
@@ -72,6 +86,7 @@ gulp.task('fonts', ['media'], function () {
     'use strict';
     return gulp.src(['./src/fonts/**'])
         .pipe(plumber())
+        .pipe(minify())
         .pipe(gulp.dest('./public/fonts'));
 });
 

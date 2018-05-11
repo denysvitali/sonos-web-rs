@@ -29,6 +29,9 @@ use results::track_info::TrackInfoResult;
 use results::meta::Meta;
 use models::track::Track;
 use results::error::Error;
+use ws::Message;
+use sonos::Speaker;
+use std::rc::Rc;
 
 macro_rules! speaker_check {
     ($a:expr, $b:expr) => {
@@ -186,11 +189,39 @@ fn main() {
     println!("🔍  Searching for your SONOS system...");
 
     let devices = sonos::discover().unwrap();
-    
+    let s : Speaker;
+
+    let devices_d = devices.clone();
+
     thread::spawn(move || {
         ws::listen("127.0.0.1:3012", |out| {
-            move |msg| {
-                println!("Received {}", msg);
+            let d = devices.clone();
+            move |msg : Message | {
+                match msg.as_text()? {
+                    "status" => {
+                        let result = d[0].track().unwrap();
+                        let json = serde_json::to_string(&TrackInfoResult{
+                            meta: Meta {
+                                success: true,
+                                error: None
+                            },
+                            track: Some(Track {
+                                title: result.title,
+                                artist: result.artist,
+                                album: result.album,
+                                album_art: result.album_art,
+                                uri: result.uri,
+                                duration: result.duration,
+                                running_time: result.running_time
+                            })
+                        }).unwrap();
+                        out.send(json);
+                    }
+                    _ => {
+                        println!("Unrecognized");
+                    }
+                };
+                //println!("Received {}", message);
                 out.send(msg)
             }
         }).unwrap();
@@ -198,7 +229,7 @@ fn main() {
     
     rocket::ignite()
         .mount("/", routes![ index, play, pause, next, prev, mute, unmute, track_info, set_volume, files])
-        .manage(Devices { speakers: devices})
+        .manage(Devices { speakers: devices_d})
         .launch();
 
 }
