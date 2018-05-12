@@ -12,6 +12,7 @@ extern crate sonos;
 extern crate rocket;
 extern crate ws;
 extern crate core;
+extern crate regex;
 
 use rocket::State;
 use rocket_contrib::Json;
@@ -20,6 +21,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::io;
 use std::thread;
+use regex::Regex;
 
 mod models;
 mod results;
@@ -139,7 +141,12 @@ fn track_info(devices: State<Devices>, id: usize) -> Json<TrackInfoResult> {
         });
     }
 
+    let mut album_art = String::new();
+    let re = Regex::new(r"^/getaa.*").unwrap();
     let result = devices.speakers[id as usize].track().unwrap();
+    if re.is_match(&result.album_art) {
+        album_art = format!("http://{}:1400{}", devices.speakers[id as usize].ip, result.album_art);
+    }
     Json(TrackInfoResult{
         meta: Meta {
             success: true,
@@ -149,7 +156,7 @@ fn track_info(devices: State<Devices>, id: usize) -> Json<TrackInfoResult> {
             title: result.title,
             artist: result.artist,
             album: result.album,
-            album_art: result.album_art,
+            album_art: album_art,
             uri: result.uri,
             duration: result.duration,
             running_time: result.running_time
@@ -199,7 +206,12 @@ fn main() {
             move |msg : Message | {
                 match msg.as_text()? {
                     "status" => {
+                        let mut album_art = String::new();
+                        let re = Regex::new(r"^/getaa.*").unwrap();
                         let result = d[0].track().unwrap();
+                        if re.is_match(&result.album_art) {
+                            album_art = format!("{}:1400{}", d[0].ip, result.album_art);
+                        }
                         let json = serde_json::to_string(&TrackInfoResult{
                             meta: Meta {
                                 success: true,
@@ -209,7 +221,7 @@ fn main() {
                                 title: result.title,
                                 artist: result.artist,
                                 album: result.album,
-                                album_art: result.album_art,
+                                album_art: album_art,
                                 uri: result.uri,
                                 duration: result.duration,
                                 running_time: result.running_time

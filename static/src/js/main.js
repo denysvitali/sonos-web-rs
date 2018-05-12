@@ -40,6 +40,8 @@ let songbox_songinfo_title = songbox_songinfo.getElementsByClassName('title')[0]
 let songbox_songinfo_artist = songbox_songinfo.getElementsByClassName('artist')[0];
 let songbox_songinfo_album = songbox_songinfo.getElementsByClassName('album')[0];
 
+let m_album_art = '';
+
 function formatTime(time){
     let minutes = Math.floor(time/60);
     let seconds = time - minutes * 60;
@@ -55,7 +57,11 @@ function updateSongInfo(){
         songbox_songinfo_title.innerText = json.title;
         songbox_songinfo_artist.innerText = json.artist;
         songbox_songinfo_album.innerText = json.album;
-        songbox_songinfo_albumart.src = json.album_art;
+
+        if(m_album_art != json.album_art){
+            m_album_art = json.album_art;
+            songbox_songinfo_albumart.src = json.album_art;
+        }
         playbarprogress.style.width = json.running_time.secs / json.duration.secs * 100 + '%';
         running_time.innerText = `${formatTime(json.running_time.secs)} / ${formatTime(json.duration.secs)}`;
 
@@ -66,16 +72,12 @@ function updateSongInfo(){
 
 function updateLoop(){
     updateSongInfo();
-    setTimeout('updateLoop()', 500);
+    setTimeout('updateLoop()', 1000);
 }
 
 function init() {
     console.log('Init!');
     updateLoop();
 }
-
-console.log(songbox_songinfo_album);
-console.log(songbox_songinfo_artist);
-console.log(songbox_songinfo_album);
 
 init();
